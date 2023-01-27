@@ -13,7 +13,10 @@ func (c *Collection[T]) HasItems() bool {
 }
 
 func (c *Collection[T]) Items() []T {
-	return c.items
+	if c.items != nil {
+		return c.items
+	}
+	return []T{}
 }
 
 func (c *Collection[T]) NextPage(ctx context.Context) error {
@@ -21,6 +24,10 @@ func (c *Collection[T]) NextPage(ctx context.Context) error {
 
 	if c.fetchToken == "" {
 		c.items = nil
+		return nil
+	}
+
+	if c.fetchNextPage == nil {
 		return nil
 	}
 

@@ -40,7 +40,7 @@ func ParseConnectionString(s string) (*ConnectionString, error) {
 		return nil, errors.New("missing connection string value for 'SharedAccessKeyName'")
 	}
 	if cs.Key == "" {
-		return nil, errors.New("missing connection string value for 'Key'")
+		return nil, errors.New("missing connection string value for 'SharedAccessKey'")
 	}
 
 	return &cs, nil

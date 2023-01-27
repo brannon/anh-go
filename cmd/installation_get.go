@@ -3,8 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
 
 	"github.com/brannon/anh-go/anh"
 	"github.com/spf13/cobra"
@@ -17,20 +15,24 @@ func NewInstallationGetCommand() *cobra.Command {
 		RunE: func(c *cobra.Command, args []string) error {
 			installationId := args[0]
 
-			client, err := anh.NewClient(HubName, ConnectionString)
+			hubName, connectionString, err := getHubNameAndConnectionString()
 			if err != nil {
 				return err
 			}
 
-			log.SetOutput(os.Stderr)
-			client.Logger = log.Default()
+			client, err := anh.NewClient(hubName, connectionString)
+			if err != nil {
+				return err
+			}
+
+			client.Logger = getLogger()
 
 			installation, err := client.GetInstallation(context.Background(), installationId)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println(installation.GetRawData().PrettyString())
+			fmt.Println(installation.GetRawData().FormattedString())
 
 			return nil
 		},

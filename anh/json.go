@@ -12,7 +12,7 @@ func (obj JSONObject) String() string {
 	return string(bytes)
 }
 
-func (obj JSONObject) PrettyString() string {
+func (obj JSONObject) FormattedString() string {
 	bytes := bytes.Buffer{}
 	encoder := json.NewEncoder(&bytes)
 	encoder.SetIndent("", "  ")
