@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/brannon/anh-go/anh"
+	"github.com/brannon/anh-go"
 	"github.com/spf13/cobra"
 )
 
-func NewInstallationGetCommand() *cobra.Command {
+func NewRegistrationGetCommand() *cobra.Command {
 	cobraCmd := &cobra.Command{
 		Use:  "get",
 		Args: cobra.ExactArgs(1),
 		RunE: func(c *cobra.Command, args []string) error {
-			installationId := args[0]
+			registrationId := args[0]
 
 			hubName, connectionString, err := getHubNameAndConnectionString()
 			if err != nil {
@@ -27,12 +27,12 @@ func NewInstallationGetCommand() *cobra.Command {
 
 			client.Logger = getLogger()
 
-			installation, err := client.GetInstallation(context.Background(), installationId)
+			registration, err := client.GetRegistration(context.Background(), registrationId)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println(installation.GetRawData().FormattedString())
+			fmt.Printf("ID: %s; Platform: %s, Tags: %v\n", registration.GetRegistrationId(), registration.GetPlatform(), registration.GetTags())
 
 			return nil
 		},

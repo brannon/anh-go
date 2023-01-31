@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/brannon/anh-go/cmd"
+	"github.com/brannon/anh-go/cli/cmd"
 )
 
 func main() {

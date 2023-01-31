@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/brannon/anh-go/anh"
+	"github.com/brannon/anh-go"
 	"github.com/spf13/cobra"
 )
 
