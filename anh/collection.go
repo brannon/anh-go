@@ -5,7 +5,8 @@ import "context"
 type Collection[T any] struct {
 	items         []T
 	fetchToken    string
-	fetchNextPage func(ctx context.Context, token string) ([]T, string, error)
+	fetchNextPage func(ctx context.Context, token string, count int) ([]T, string, error)
+	pageSize      int
 }
 
 func (c *Collection[T]) HasItems() bool {
@@ -31,7 +32,7 @@ func (c *Collection[T]) NextPage(ctx context.Context) error {
 		return nil
 	}
 
-	c.items, c.fetchToken, err = c.fetchNextPage(ctx, c.fetchToken)
+	c.items, c.fetchToken, err = c.fetchNextPage(ctx, c.fetchToken, c.pageSize)
 	if err != nil {
 		return err
 	}

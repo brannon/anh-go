@@ -9,7 +9,6 @@ func NewInstallationCommand() *cobra.Command {
 
 	cobraCmd.AddCommand(
 		NewInstallationGetCommand(),
-		NewInstallationListCommand(),
 	)
 
 	return cobraCmd

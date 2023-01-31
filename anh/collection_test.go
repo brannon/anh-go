@@ -37,7 +37,7 @@ func Test_Collection_NextPage(t *testing.T) {
 
 	c := Collection[int]{
 		fetchToken: "token",
-		fetchNextPage: func(ctx context.Context, token string) ([]int, string, error) {
+		fetchNextPage: func(ctx context.Context, token string, count int) ([]int, string, error) {
 			fetchNextPageCallCount++
 			tokenParam = token
 			return []int{1, 2, 3}, "", nil

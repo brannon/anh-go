@@ -58,6 +58,7 @@ func Execute(args []string) error {
 func init() {
 	rootCmd.AddCommand(NewGenerateTokenCommand())
 	rootCmd.AddCommand(NewInstallationCommand())
+	rootCmd.AddCommand(NewRegistrationCommand())
 }
 
 func getHubNameAndConnectionString() (string, string, error) {

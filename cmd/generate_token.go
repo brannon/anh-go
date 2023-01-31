@@ -11,9 +11,19 @@ import (
 func NewGenerateTokenCommand() *cobra.Command {
 	cobraCmd := &cobra.Command{
 		Use:  "generate-token",
-		Args: cobra.ExactArgs(1),
+		Args: cobra.MaximumNArgs(1),
 		RunE: func(c *cobra.Command, args []string) error {
-			connectionString := args[0]
+			var connectionString string
+
+			if len(args) > 0 {
+				connectionString = args[0]
+			} else {
+				var err error
+				_, connectionString, err = getHubNameAndConnectionString()
+				if err != nil {
+					return err
+				}
+			}
 
 			cs, err := anh.ParseConnectionString(connectionString)
 			if err != nil {

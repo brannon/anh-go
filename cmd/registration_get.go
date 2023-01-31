@@ -8,11 +8,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewInstallationListCommand() *cobra.Command {
+func NewRegistrationGetCommand() *cobra.Command {
 	cobraCmd := &cobra.Command{
-		Use:  "list",
-		Args: cobra.NoArgs,
+		Use:  "get",
+		Args: cobra.ExactArgs(1),
 		RunE: func(c *cobra.Command, args []string) error {
+			registrationId := args[0]
+
 			hubName, connectionString, err := getHubNameAndConnectionString()
 			if err != nil {
 				return err
@@ -25,21 +27,12 @@ func NewInstallationListCommand() *cobra.Command {
 
 			client.Logger = getLogger()
 
-			collection, err := client.ListInstallations(context.Background())
+			registration, err := client.GetRegistration(context.Background(), registrationId)
 			if err != nil {
 				return err
 			}
 
-			for collection.HasItems() {
-				for _, installation := range collection.Items() {
-					fmt.Println(installation.GetRawData().String())
-				}
-
-				err = collection.NextPage(context.Background())
-				if err != nil {
-					return err
-				}
-			}
+			fmt.Printf("ID: %s; Platform: %s, Tags: %v\n", registration.GetRegistrationId(), registration.GetPlatform(), registration.GetTags())
 
 			return nil
 		},
