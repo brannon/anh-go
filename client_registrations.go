@@ -10,7 +10,7 @@ import (
 )
 
 func (c *Client) GetRegistration(ctx context.Context, registrationId string) (Registration, error) {
-	url := c.buildUrl(c.HubName, "registrations", registrationId)
+	url := c.buildUrl(c.hubName, "registrations", registrationId)
 
 	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
 
@@ -56,7 +56,7 @@ func (c *Client) ListRegistrations(ctx context.Context) (*PagedCollection[Regist
 }
 
 func (c *Client) fetchNextRegistrationsPage(ctx context.Context, continuationToken string, count int) ([]Registration, string, error) {
-	url := c.buildUrl(c.HubName, "registrations")
+	url := c.buildUrl(c.hubName, "registrations")
 
 	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
 

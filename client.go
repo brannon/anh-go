@@ -10,31 +10,64 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"golang.org/x/exp/slices"
 )
 
 type Client struct {
-	HubName       string
 	VerboseLogger io.Writer
 
 	endpoint      string
+	httpClient    *http.Client
+	hubName       string
 	tokenProvider TokenProvider
 }
 
-func NewClient(hubName string, connectionString string) (*Client, error) {
-	cs, err := ParseConnectionString(connectionString)
-	if err != nil {
-		return nil, err
+type ClientOption func(*Client) error
+
+func WithConnectionString(connectionString string) ClientOption {
+	return func(c *Client) error {
+		cs, err := ParseConnectionString(connectionString)
+		if err != nil {
+			return err
+		}
+
+		endpoint := strings.Replace(cs.Endpoint, "sb://", "https://", 1)
+		tokenProvider := NewSasTokenProvider(cs.KeyName, cs.Key)
+
+		c.endpoint = endpoint
+		c.tokenProvider = tokenProvider
+		return nil
+	}
+}
+
+func WithHttpClient(httpClient *http.Client) ClientOption {
+	return func(c *Client) error {
+		c.httpClient = httpClient
+		return nil
+	}
+}
+
+func WithVerboseLogger(w io.Writer) ClientOption {
+	return func(c *Client) error {
+		c.VerboseLogger = w
+		return nil
+	}
+}
+
+func NewClient(hubName string, opts ...ClientOption) (*Client, error) {
+	c := &Client{
+		httpClient: http.DefaultClient,
+		hubName:    hubName,
 	}
 
-	endpoint := strings.Replace(cs.Endpoint, "sb://", "https://", 1)
-	tokenProvider := NewSasTokenProvider(cs.KeyName, cs.Key)
+	for _, opt := range opts {
+		err := opt(c)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-	return &Client{
-		HubName: hubName,
-
-		endpoint:      endpoint,
-		tokenProvider: tokenProvider,
-	}, nil
+	return c, nil
 }
 
 func (c *Client) buildUrl(paths ...string) string {
@@ -42,17 +75,34 @@ func (c *Client) buildUrl(paths ...string) string {
 	return result
 }
 
-func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
-	sasToken, _, err := c.tokenProvider.GenerateSasToken(c.endpoint, time.Now().UTC().Add(5*time.Minute))
-	if err != nil {
-		return nil, err
+func (c *Client) checkResponse(res *http.Response, expectedStatuses ...int) error {
+	if slices.Contains(expectedStatuses, res.StatusCode) {
+		return nil
 	}
 
-	query := req.URL.Query()
-	query.Add("api-version", "2020-06")
-	req.URL.RawQuery = query.Encode()
+	switch res.StatusCode {
+	case http.StatusUnauthorized:
+		return ErrInvalidCredentials
 
-	req.Header.Set("Authorization", sasToken)
+	case http.StatusNotFound:
+		return ErrNotFound
+
+	default:
+		return fmt.Errorf("unexpected status code: %d", res.StatusCode)
+	}
+}
+
+func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
+	if c.tokenProvider != nil {
+		sasToken, _, err := c.tokenProvider.GenerateSasToken(c.endpoint, time.Now().UTC().Add(5*time.Minute))
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Authorization", sasToken)
+	}
+
+	appendQueryString(req.URL, "api-version", "2020-06")
 
 	c.verboseLogInfo("Begin Request")
 	c.verboseLogOut("%s %s", req.Method, pathForLogging(req.URL))
@@ -62,7 +112,7 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 		c.verboseLogOut("%s: %s", name, req.Header.Get(name))
 	}
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := c.httpClient.Do(req)
 
 	if err != nil {
 		c.verboseLogError("Client error: %s", err.Error())
@@ -78,7 +128,7 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 }
 
 func (c *Client) Validate(ctx context.Context) error {
-	req, err := http.NewRequestWithContext(ctx, "GET", c.buildUrl(c.HubName), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", c.buildUrl(c.hubName), nil)
 	if err != nil {
 		return err
 	}
