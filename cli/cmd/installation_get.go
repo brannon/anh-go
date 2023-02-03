@@ -20,7 +20,7 @@ func NewInstallationGetCommand() *cobra.Command {
 				return err
 			}
 
-			client, err := anh.NewClient(hubName, connectionString)
+			client, err := anh.NewClient(hubName, anh.WithConnectionString(connectionString))
 			if err != nil {
 				return err
 			}

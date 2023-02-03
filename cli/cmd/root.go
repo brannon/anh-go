@@ -59,6 +59,7 @@ func Execute(args []string) error {
 func init() {
 	rootCmd.AddCommand(NewGenerateTokenCommand())
 	rootCmd.AddCommand(NewInstallationCommand())
+	rootCmd.AddCommand(NewMessageCommand())
 	rootCmd.AddCommand(NewRegistrationCommand())
 }
 

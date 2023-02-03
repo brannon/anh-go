@@ -5,9 +5,13 @@ import "strings"
 type Platform string
 
 const (
-	PlatformApple Platform = "apns"
+	PlatformApple Platform = "apple"
 	PlatformGcm   Platform = "gcm"
 )
+
+func (p Platform) String() string {
+	return string(p)
+}
 
 type Registration interface {
 	GetPlatform() Platform

@@ -7,7 +7,7 @@ import (
 )
 
 func (c *Client) GetInstallation(ctx context.Context, id string) (*Installation, error) {
-	url := c.buildUrl(c.HubName, "installations", id)
+	url := c.buildUrl(c.hubName, "installations", id)
 
 	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
 
